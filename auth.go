@@ -38,6 +38,17 @@ type LogOnDetails struct {
 	ShouldRememberPassword bool
 }
 
+func (a *Auth) WebLogOn(username string, token string) {
+	logon := new(CMsgClientLogon)
+	logon.AccountName = &username
+	logon.ProtocolVersion = proto.Uint32(MsgClientLogon_CurrentProtocol)
+	logon.QosLevel = 2
+	logon.UiMode = 4
+	logon.WebLogonNonce = &token	
+	atomic.StoreUint64(&a.client.steamId, steamid.NewIdAdv(0, 1, int32(EUniverse_Public), EAccountType_Individual).ToUint64())
+	a.client.Write(NewClientMsgProtobuf(EMsg_ClientLogon, logon))
+}
+
 // Log on with the given details. You must always specify username and
 // password OR username and loginkey. For the first login, don't set an authcode or a hash and you'll
 //  receive an error (EResult_AccountLogonDenied)
